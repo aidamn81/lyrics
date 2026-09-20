@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>iPad Lyrics Pro</title>
+    <!-- Tailwind CSS for modern layout utilities -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        pureBlack: '#000000',
+                        panelDark: '#121212',
+                        controlDark: '#1a1a1a',
+                        borderCol: '#262626'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        /* Custom smooth dark scrollbar for lyrics area */
+        .lyrics-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .lyrics-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.8);
+        }
+        .lyrics-container::-webkit-scrollbar-thumb {
+            background: #2a2a2a;
+            border-radius: 4px;
+        }
+        .lyrics-container::-webkit-scrollbar-thumb:hover {
+            background: #404040;
+        }
+        /* iPad Pro aspect ratio simulator frame for desktop viewports */
+        .ipad-frame {
+            box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.95);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex items-center justify-center bg-pureBlack p-0 md:p-6">
+
+    <div id="app-container" class="ipad-frame w-full h-full md:max-w-[1024px] md:max-h-[768px] md:rounded-[40px] bg-pureBlack border border-borderCol flex flex-col relative overflow-hidden shadow-2xl">
+        
+        <!-- Top Navigation Bar -->
+        <header class="h-16 border-b border-borderCol bg-panelDark/95 backdrop-blur-md px-6 flex items-center justify-between shrink-0 z-20">
+            <div class="flex items-center space-x-4">
+                <button id="menu-toggle" class="w-10 h-10 rounded-xl bg-controlDark hover:bg-neutral-800 active:scale-95 transition flex items-center justify-center text-white text-lg shadow-sm" title="Song Library">
+                    <i class="fa-solid fa-bars-staggered"></i>
+                </button>
+                <div class="overflow-hidden">
+                    <h1 id="current-song-title" class="text-base md:text-lg font-bold tracking-tight text-white truncate max-w-[200px] md:max-w-md">Select a Song</h1>
+                    <p id="current-song-artist" class="text-xs text-neutral-400 truncate max-w-[200px] md:max-w-md">Tap menu to choose or add lyrics</p>
+                </div>
+            </div>
+
+            <!-- Top Header Controls: Auto-Scroll, Font Resizer, Fullscreen -->
+            <div class="flex items-center space-x-2 md:space-x-3">
+                
+                <!-- Auto-Scroll Quick Controls -->
+                <div class="flex items-center bg-controlDark border border-borderCol rounded-xl p-1 space-x-1">
+                    <button id="autoscroll-toggle" onclick="toggleAutoScroll()" class="px-3 h-8 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-medium text-xs flex items-center space-x-2 transition" title="Start Auto-Scroll">
+                        <i id="autoscroll-icon" class="fa-solid fa-play text-xs text-green-400"></i>
+                        <span id="autoscroll-label" class="hidden sm:inline">Auto</span>
+                    </button>
+                    <div class="hidden sm:flex items-center space-x-1 px-1">
+                        <button onclick="adjustScrollSpeed(-0.5)" class="w-6 h-6 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white text-xs flex items-center justify-center" title="Slower">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <span id="speed-display" class="w-8 text-center text-xs font-mono text-neutral-300">1.0x</span>
+                        <button onclick="adjustScrollSpeed(0.5)" class="w-6 h-6 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white text-xs flex items-center justify-center" title="Faster">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Font Size Quick Adjuster -->
+                <div class="hidden md:flex items-center space-x-1 bg-controlDark border border-borderCol rounded-xl p-1">
+                    <button onclick="adjustFontSize(-4)" class="w-8 h-8 rounded-lg hover:bg-neutral-800 text-neutral-300 flex items-center justify-center text-sm transition" title="Decrease Font">
+                        <i class="fa-solid fa-font text-xs"></i><i class="fa-solid fa-minus text-[10px] ml-0.5"></i>
+                    </button>
+                    <span id="font-size-display" class="w-12 text-center text-xs font-mono text-neutral-400">36px</span>
+                    <button onclick="adjustFontSize(4)" class="w-8 h-8 rounded-lg hover:bg-neutral-800 text-neutral-300 flex items-center justify-center text-sm transition" title="Increase Font">
+                        <i class="fa-solid fa-font text-xs"></i><i class="fa-solid fa-plus text-[10px] ml-0.5"></i>
+                    </button>
+                </div>
+                
+                <!-- Fullscreen Toggle Button -->
+                <button onclick="toggleFullscreen()" class="w-10 h-10 rounded-xl bg-controlDark hover:bg-neutral-800 active:scale-95 transition flex items-center justify-center text-white text-sm shadow-sm" title="Toggle Fullscreen">
+                    <i id="fs-icon" class="fa-solid fa-expand"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 relative overflow-hidden flex flex-col bg-pureBlack">
+            
+            <!-- Touch Floating Scroll Buttons (Perfect for iPad stage use) -->
+            <div class="absolute right-6 bottom-6 z-10 flex flex-col space-y-3 opacity-90 hover:opacity-100 transition-opacity">
+                <button onclick="manualScroll('up')" class="w-14 h-14 rounded-2xl bg-controlDark/90 border border-neutral-700 hover:bg-neutral-800 active:scale-95 shadow-2xl flex items-center justify-center text-white text-xl backdrop-blur-md transition" title="Scroll Up">
+                    <i class="fa-solid fa-chevron-up"></i>
+                </button>
+                <button onclick="manualScroll('down')" class="w-14 h-14 rounded-2xl bg-controlDark/90 border border-neutral-700 hover:bg-neutral-800 active:scale-95 shadow-2xl flex items-center justify-center text-white text-xl backdrop-blur-md transition" title="Scroll Down">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+            </div>
+
+            <!-- Scrollable Lyrics Container -->
+            <div id="lyrics-scroll-area" class="lyrics-container flex-1 overflow-y-auto px-8 py-16 md:px-24 md:py-20 focus:outline-none">
+                <div id="lyrics-content" class="max-w-3xl mx-auto whitespace-pre-wrap leading-relaxed text-white transition-all duration-150">
+                    <!-- Default empty state -->
+                    <div class="h-full flex flex-col items-center justify-center text-center py-24 text-neutral-500 space-y-4">
+                        <div class="w-20 h-20 rounded-3xl bg-controlDark border border-neutral-800 flex items-center justify-center text-3xl text-neutral-300 shadow-inner">
+                            <i class="fa-solid fa-music"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold text-neutral-200">No Song Selected</h2>
+                        <p class="max-w-sm text-sm text-neutral-400">Tap the top-left menu button to select or add new song lyrics.</p>
+                        <button onclick="openDrawer()" class="px-5 py-2.5 rounded-xl bg-white text-black font-medium hover:bg-neutral-200 transition active:scale-95 shadow-lg">
+                            Open Song Library
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Sidebar Drawer Overlay -->
+        <div id="drawer-overlay" class="absolute inset-0 bg-black/75 backdrop-blur-sm z-30 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+        <!-- Sliding Sidebar / Drawer -->
+        <div id="sidebar-drawer" class="absolute top-0 left-0 bottom-0 w-80 md:w-96 bg-panelDark border-r border-borderCol z-40 transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+            
+            <!-- Drawer Header -->
+            <div class="h-16 px-6 border-b border-borderCol flex items-center justify-between shrink-0">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-book-open text-white"></i>
+                    <h2 class="font-bold text-white text-base">Song Library</h2>
+                </div>
+                <button onclick="closeDrawer()" class="w-8 h-8 rounded-lg bg-controlDark hover:bg-neutral-800 flex items-center justify-center text-neutral-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Add Song Button -->
+            <div class="p-4 border-b border-borderCol shrink-0">
+                <button onclick="openAddModal()" class="w-full py-3 px-4 rounded-xl bg-white text-black font-semibold hover:bg-neutral-200 active:scale-98 transition flex items-center justify-center space-x-2 shadow-lg">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    <span>Add New Song</span>
+                </button>
+            </div>
+
+            <!-- Song List Container -->
+            <div id="song-list" class="flex-1 overflow-y-auto p-4 space-y-2">
+                <!-- Dynamically populated songs go here -->
+            </div>
+
+            <!-- Drawer Footer with Font Size Slider -->
+            <div class="p-4 border-t border-borderCol bg-black/60 shrink-0 space-y-3">
+                <div class="flex items-center justify-between text-xs text-neutral-400">
+                    <span>Font Size</span>
+                    <span id="drawer-font-val">36px</span>
+                </div>
+                <input type="range" id="font-slider" min="24" max="80" value="36" oninput="setFontSize(this.value)" class="w-full accent-white bg-controlDark rounded-lg appearance-none h-2 cursor-pointer">
+            </div>
+        </div>
+
+        <!-- Add / Edit Song Modal -->
+        <div id="song-modal" class="absolute inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-panelDark border border-borderCol w-full max-w-lg rounded-3xl p-6 shadow-2xl flex flex-col space-y-4 max-h-[90vh] overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <h3 id="modal-title" class="text-lg font-bold text-white">Add New Song</h3>
+                    <button onclick="closeAddModal()" class="w-8 h-8 rounded-lg bg-controlDark hover:bg-neutral-800 flex items-center justify-center text-neutral-400 hover:text-white transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-3 flex-1 overflow-y-auto pr-1">
+                    <input type="hidden" id="edit-song-id">
+                    <div>
+                        <label class="block text-xs font-medium text-neutral-400 mb-1">Song Title</label>
+                        <input type="text" id="song-title-input" placeholder="e.g. Hotel California" class="w-full bg-controlDark border border-borderCol rounded-xl px-4 py-3 text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-neutral-400 mb-1">Artist</label>
+                        <input type="text" id="song-artist-input" placeholder="e.g. Eagles" class="w-full bg-controlDark border border-borderCol rounded-xl px-4 py-3 text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-neutral-400 mb-1">Lyrics</label>
+                        <textarea id="song-lyrics-input" rows="8" placeholder="Paste your song lyrics here..." class="w-full bg-controlDark border border-borderCol rounded-xl p-4 text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-white transition resize-none font-mono"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-2 border-t border-borderCol shrink-0">
+                    <button onclick="closeAddModal()" class="px-5 py-2.5 rounded-xl bg-controlDark hover:bg-neutral-800 text-neutral-300 font-medium text-sm transition">Cancel</button>
+                    <button onclick="saveSong()" class="px-6 py-2.5 rounded-xl bg-white text-black font-semibold hover:bg-neutral-200 text-sm transition shadow-md">Save Song</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Toast Notification Box -->
+        <div id="toast" class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-controlDark border border-neutral-700 text-white px-5 py-3 rounded-2xl shadow-2xl z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-3">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-green-400"></i>
+            <span id="toast-msg" class="text-sm font-medium">Action successful</span>
+        </div>
+
+    </div>
+
+    <script>
+        // Default sample songs for instant evaluation
+        const defaultSongs = [
+            {
+                id: '1',
+                title: 'Bohemian Rhapsody',
+                artist: 'Queen',
+                lyrics: `Is this the real life?
+Is this just fantasy?
+Caught in a landslide,
+No escape from reality.
+
+Open your eyes,
+Look up to the skies and see,
+I'm just a poor boy, I need no sympathy,
+Because I'm easy come, easy go,
+Little high, little low,
+Any way the wind blows doesn't really matter to me, to me.
+
+Mama, just killed a man,
+Put a gun against his head,
+Pulled my trigger, now he's dead.
+Mama, life had just begun,
+But now I've gone and thrown it all away.
+
+Mama, ooh,
+Didn't mean to make you cry,
+If I'm not back again this time tomorrow,
+Carry on, carry on as if nothing really matters.`
+            },
+            {
+                id: '2',
+                title: 'Imagine',
+                artist: 'John Lennon',
+                lyrics: `Imagine there's no heaven
+It's easy if you try
+No hell below us
+Above us, only sky
+Imagine all the people
+Livin' for today
+
+Imagine there's no countries
+It isn't hard to do
+Nothing to kill or die for
+And no religion, too
+Imagine all the people
+Livin' life in peace
+
+You may say I'm a dreamer
+But I'm not the only one
+I hope someday you'll join us
+And the world will be as one`
+            }
+        ];
+
+        // Application State loaded from localStorage
+        let songs = JSON.parse(localStorage.getItem('ipad_lyrics_songs')) || defaultSongs;
+        let currentSongId = localStorage.getItem('ipad_lyrics_current') || (songs.length > 0 ? songs[0].id : null);
+        let fontSize = parseInt(localStorage.getItem('ipad_lyrics_fontsize')) || 36;
+        
+        // Auto-scroll ticker state
+        let isAutoScrolling = false;
+        let scrollSpeed = 1.0;
+        let scrollInterval = null;
+
+        // DOM Element references
+        const drawer = document.getElementById('sidebar-drawer');
+        const drawerOverlay = document.getElementById('drawer-overlay');
+        const menuToggle = document.getElementById('menu-toggle');
+        const songListEl = document.getElementById('song-list');
+        const lyricsContentEl = document.getElementById('lyrics-content');
+        const currentTitleEl = document.getElementById('current-song-title');
+        const currentArtistEl = document.getElementById('current-song-artist');
+        const fontSizeDisplay = document.getElementById('font-size-display');
+        const drawerFontVal = document.getElementById('drawer-font-val');
+        const fontSlider = document.getElementById('font-slider');
+        const songModal = document.getElementById('song-modal');
+        const scrollArea = document.getElementById('lyrics-scroll-area');
+
+        window.onload = function() {
+            applyFontSize(fontSize);
+            renderSongList();
+            if (currentSongId) {
+                loadSong(currentSongId);
+            } else if (songs.length > 0) {
+                loadSong(songs[0].id);
+            }
+
+            menuToggle.addEventListener('click', openDrawer);
+            drawerOverlay.addEventListener('click', closeDrawer);
+
+            // Keyboard navigation support for desktop/iPad keyboards
+            document.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                if (e.key === 'ArrowDown' || e.key === ' ') {
+                    e.preventDefault();
+                    scrollArea.scrollBy({ top: 180, behavior: 'smooth' });
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    scrollArea.scrollBy({ top: -180, behavior: 'smooth' });
+                } else if (e.key === 'p' || e.key === 'P') {
+                    toggleAutoScroll();
+                }
+            });
+
+            // Pause auto-scroll immediately if user interacts or touches the screen
+            scrollArea.addEventListener('touchstart', () => { if (isAutoScrolling) toggleAutoScroll(); });
+            scrollArea.addEventListener('wheel', () => { if (isAutoScrolling) toggleAutoScroll(); });
+        };
+
+        function openDrawer() {
+            drawer.classList.remove('-translate-x-full');
+            drawerOverlay.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeDrawer() {
+            drawer.classList.add('-translate-x-full');
+            drawerOverlay.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function renderSongList() {
+            if (songs.length === 0) {
+                songListEl.innerHTML = `
+                    <div class="text-center py-12 text-neutral-500 text-sm">
+                        No songs in library.<br>Click 'Add New Song' above.
+                    </div>
+                `;
+                return;
+            }
+
+            songListEl.innerHTML = '';
+            songs.forEach(song => {
+                const isSelected = song.id === currentSongId;
+                const item = document.createElement('div');
+                item.className = `group flex items-center justify-between p-3 rounded-2xl cursor-pointer transition ${isSelected ? 'bg-neutral-800 text-white font-medium border border-neutral-700 shadow-sm' : 'hover:bg-neutral-900 text-neutral-400 hover:text-white'}`;
+                
+                item.innerHTML = `
+                    <div class="flex-1 min-w-0 pr-2" onclick="selectSong('${song.id}')">
+                        <h4 class="text-sm truncate font-medium">${escapeHtml(song.title)}</h4>
+                        <p class="text-xs text-neutral-500 truncate">${escapeHtml(song.artist || 'Unknown Artist')}</p>
+                    </div>
+                    <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="event.stopPropagation(); editSong('${song.id}')" class="w-8 h-8 rounded-lg hover:bg-neutral-700 flex items-center justify-center text-neutral-400 hover:text-white transition" title="Edit">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                        <button onclick="event.stopPropagation(); deleteSong('${song.id}')" class="w-8 h-8 rounded-lg hover:bg-red-500/20 flex items-center justify-center text-neutral-400 hover:text-red-400 transition" title="Delete">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </div>
+                `;
+                songListEl.appendChild(item);
+            });
+        }
+
+        function selectSong(id) {
+            if (isAutoScrolling) toggleAutoScroll();
+            currentSongId = id;
+            localStorage.setItem('ipad_lyrics_current', id);
+            loadSong(id);
+            renderSongList();
+            closeDrawer();
+        }
+
+        function loadSong(id) {
+            const song = songs.find(s => s.id === id);
+            if (!song) return;
+
+            currentTitleEl.textContent = song.title;
+            currentArtistEl.textContent = song.artist || 'Unknown Artist';
+            lyricsContentEl.innerHTML = escapeHtml(song.lyrics);
+            scrollArea.scrollTop = 0;
+        }
+
+        function openAddModal(editId = null) {
+            document.getElementById('edit-song-id').value = '';
+            document.getElementById('song-title-input').value = '';
+            document.getElementById('song-artist-input').value = '';
+            document.getElementById('song-lyrics-input').value = '';
+            document.getElementById('modal-title').textContent = 'Add New Song';
+
+            if (editId) {
+                const song = songs.find(s => s.id === editId);
+                if (song) {
+                    document.getElementById('edit-song-id').value = song.id;
+                    document.getElementById('song-title-input').value = song.title;
+                    document.getElementById('song-artist-input').value = song.artist;
+                    document.getElementById('song-lyrics-input').value = song.lyrics;
+                    document.getElementById('modal-title').textContent = 'Edit Song';
+                }
+            }
+            songModal.classList.remove('hidden');
+        }
+
+        function closeAddModal() {
+            songModal.classList.add('hidden');
+        }
+
+        function editSong(id) {
+            openAddModal(id);
+        }
+
+        function saveSong() {
+            const editId = document.getElementById('edit-song-id').value;
+            const title = document.getElementById('song-title-input').value.trim();
+            const artist = document.getElementById('song-artist-input').value.trim();
+            const lyrics = document.getElementById('song-lyrics-input').value.trim();
+
+            if (!title) {
+                showToast('Please enter a song title', 'error');
+                return;
+            }
+            if (!lyrics) {
+                showToast('Please paste the lyrics', 'error');
+                return;
+            }
+
+            if (editId) {
+                const song = songs.find(s => s.id === editId);
+                if (song) {
+                    song.title = title;
+                    song.artist = artist;
+                    song.lyrics = lyrics;
+                }
+                showToast('Song updated successfully!');
+            } else {
+                const newSong = {
+                    id: Date.now().toString(),
+                    title,
+                    artist,
+                    lyrics
+                };
+                songs.push(newSong);
+                currentSongId = newSong.id;
+                showToast('Song added to library!');
+            }
+
+            localStorage.setItem('ipad_lyrics_songs', JSON.stringify(songs));
+            localStorage.setItem('ipad_lyrics_current', currentSongId);
+            
+            renderSongList();
+            loadSong(currentSongId);
+            closeAddModal();
+        }
+
+        function deleteSong(id) {
+            if (confirm('Delete this song from library?')) {
+                songs = songs.filter(s => s.id !== id);
+                localStorage.setItem('ipad_lyrics_songs', JSON.stringify(songs));
+                
+                if (currentSongId === id) {
+                    currentSongId = songs.length > 0 ? songs[0].id : null;
+                    localStorage.setItem('ipad_lyrics_current', currentSongId || '');
+                    if (currentSongId) {
+                        loadSong(currentSongId);
+                    } else {
+                        currentTitleEl.textContent = 'Select a Song';
+                        currentArtistEl.textContent = 'Tap menu to choose or add lyrics';
+                        lyricsContentEl.innerHTML = `
+                            <div class="h-full flex flex-col items-center justify-center text-center py-24 text-neutral-500 space-y-4">
+                                <div class="w-20 h-20 rounded-3xl bg-controlDark border border-neutral-800 flex items-center justify-center text-3xl text-neutral-300 shadow-inner">
+                                    <i class="fa-solid fa-music"></i>
+                                </div>
+                                <h2 class="text-xl font-semibold text-neutral-200">No Song Selected</h2>
+                                <p class="max-w-sm text-sm text-neutral-400">Tap the top-left menu button to select or add new song lyrics.</p>
+                                <button onclick="openDrawer()" class="px-5 py-2.5 rounded-xl bg-white text-black font-medium hover:bg-neutral-200 transition active:scale-95 shadow-lg">
+                                    Open Song Library
+                                </button>
+                            </div>
+                        `;
+                    }
+                }
+                renderSongList();
+                showToast('Song deleted');
+            }
+        }
+
+        // Auto-Scroll Ticker Logic
+        function toggleAutoScroll() {
+            isAutoScrolling = !isAutoScrolling;
+            const icon = document.getElementById('autoscroll-icon');
+            const toggleBtn = document.getElementById('autoscroll-toggle');
+
+            if (isAutoScrolling) {
+                icon.className = "fa-solid fa-pause text-xs text-amber-400";
+                toggleBtn.classList.add('bg-neutral-800', 'border-neutral-600');
+                
+                function step() {
+                    if (!isAutoScrolling) return;
+                    scrollArea.scrollBy({ top: scrollSpeed, behavior: 'auto' });
+                    
+                    if (scrollArea.scrollTop + scrollArea.clientHeight >= scrollArea.scrollHeight - 5) {
+                        toggleAutoScroll();
+                        return;
+                    }
+                    scrollInterval = requestAnimationFrame(step);
+                }
+                scrollInterval = requestAnimationFrame(step);
+            } else {
+                icon.className = "fa-solid fa-play text-xs text-green-400";
+                toggleBtn.classList.remove('bg-neutral-800', 'border-neutral-600');
+                if (scrollInterval) cancelAnimationFrame(scrollInterval);
+            }
+        }
+
+        function adjustScrollSpeed(delta) {
+            scrollSpeed = Math.max(0.5, Math.min(4.0, scrollSpeed + delta));
+            document.getElementById('speed-display').textContent = scrollSpeed.toFixed(1) + 'x';
+        }
+
+        function adjustFontSize(delta) {
+            let newSize = fontSize + delta;
+            if (newSize < 24) newSize = 24;
+            if (newSize > 80) newSize = 80;
+            setFontSize(newSize);
+        }
+
+        function setFontSize(val) {
+            fontSize = parseInt(val);
+            applyFontSize(fontSize);
+            localStorage.setItem('ipad_lyrics_fontsize', fontSize);
+        }
+
+        function applyFontSize(size) {
+            lyricsContentEl.style.fontSize = size + 'px';
+            fontSizeDisplay.textContent = size + 'px';
+            drawerFontVal.textContent = size + 'px';
+            fontSlider.value = size;
+        }
+
+        function manualScroll(direction) {
+            if (isAutoScrolling) toggleAutoScroll();
+            const amount = 320;
+            scrollArea.scrollBy({
+                top: direction === 'down' ? amount : -amount,
+                behavior: 'smooth'
+            });
+        }
+
+        function toggleFullscreen() {
+            const elem = document.documentElement;
+            const icon = document.getElementById('fs-icon');
+            if (!document.fullscreenElement) {
+                elem.requestFullscreen().catch(err => console.log(err));
+                icon.className = "fa-solid fa-compress";
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                icon.className = "fa-solid fa-expand";
+            }
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.textContent = msg;
+            toastIcon.className = type === 'error' ? "fa-solid fa-circle-exclamation text-red-400" : "fa-solid fa-circle-check text-green-400";
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
