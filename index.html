@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>iPad Lyrics Pro</title>
+    <!-- Apple Web App / Home Screen Icons -->
+    <link rel="apple-touch-icon" href="https://usercontent.googleusercontent.com/u/0/drive-storage/AOGk8nF4V2XQ5cW6_vGZ5j8l3M2N1K8L4p7Q9s3T5v2X1z8K4p7Q9s3T5v2X1z=s512">
     <!-- Tailwind CSS for modern layout utilities -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -66,8 +68,8 @@
                     <i class="fa-solid fa-bars-staggered"></i>
                 </button>
                 <div class="overflow-hidden">
-                    <h1 id="current-song-title" class="text-base md:text-lg font-bold tracking-tight text-white truncate max-w-[200px] md:max-w-md">Select a Song</h1>
-                    <p id="current-song-artist" class="text-xs text-neutral-400 truncate max-w-[200px] md:max-w-md">Tap menu to choose or add lyrics</p>
+                    <h1 id="current-song-title" class="text-base md:text-lg font-bold tracking-tight text-white truncate max-w-[160px] sm:max-w-[200px] md:max-w-md">Select a Song</h1>
+                    <p id="current-song-artist" class="text-xs text-neutral-400 truncate max-w-[160px] sm:max-w-[200px] md:max-w-md">Tap menu to choose or add lyrics</p>
                 </div>
             </div>
 
@@ -91,12 +93,12 @@
                     </div>
                 </div>
 
-                <!-- Font Size Quick Adjuster -->
-                <div class="hidden md:flex items-center space-x-1 bg-controlDark border border-borderCol rounded-xl p-1">
+                <!-- Font Size Quick Adjuster (Always Visible) -->
+                <div class="flex items-center space-x-1 bg-controlDark border border-borderCol rounded-xl p-1">
                     <button onclick="adjustFontSize(-4)" class="w-8 h-8 rounded-lg hover:bg-neutral-800 text-neutral-300 flex items-center justify-center text-sm transition" title="Decrease Font">
                         <i class="fa-solid fa-font text-xs"></i><i class="fa-solid fa-minus text-[10px] ml-0.5"></i>
                     </button>
-                    <span id="font-size-display" class="w-12 text-center text-xs font-mono text-neutral-400">36px</span>
+                    <span id="font-size-display" class="w-10 sm:w-12 text-center text-xs font-mono text-neutral-400">36px</span>
                     <button onclick="adjustFontSize(4)" class="w-8 h-8 rounded-lg hover:bg-neutral-800 text-neutral-300 flex items-center justify-center text-sm transition" title="Increase Font">
                         <i class="fa-solid fa-font text-xs"></i><i class="fa-solid fa-plus text-[10px] ml-0.5"></i>
                     </button>
