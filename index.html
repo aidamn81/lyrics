@@ -4,8 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>iPad Lyrics Pro</title>
-    <!-- Apple Web App / Home Screen Icons -->
-    <link rel="apple-touch-icon" href="icon.jpg">
+    
+    <!-- Apple Web App / Home Screen Icons & Meta -->
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Lyrics Pro">
+
     <!-- Tailwind CSS for modern layout utilities -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -223,7 +229,7 @@
     </div>
 
     <script>
-        // Default sample songs for instant evaluation
+        // Sample themes/songs summary placeholder handling
         const defaultSongs = [
             {
                 id: '1',
@@ -232,25 +238,7 @@
                 lyrics: `Is this the real life?
 Is this just fantasy?
 Caught in a landslide,
-No escape from reality.
-
-Open your eyes,
-Look up to the skies and see,
-I'm just a poor boy, I need no sympathy,
-Because I'm easy come, easy go,
-Little high, little low,
-Any way the wind blows doesn't really matter to me, to me.
-
-Mama, just killed a man,
-Put a gun against his head,
-Pulled my trigger, now he's dead.
-Mama, life had just begun,
-But now I've gone and thrown it all away.
-
-Mama, ooh,
-Didn't mean to make you cry,
-If I'm not back again this time tomorrow,
-Carry on, carry on as if nothing really matters.`
+No escape from reality.`
             },
             {
                 id: '2',
@@ -259,21 +247,7 @@ Carry on, carry on as if nothing really matters.`
                 lyrics: `Imagine there's no heaven
 It's easy if you try
 No hell below us
-Above us, only sky
-Imagine all the people
-Livin' for today
-
-Imagine there's no countries
-It isn't hard to do
-Nothing to kill or die for
-And no religion, too
-Imagine all the people
-Livin' life in peace
-
-You may say I'm a dreamer
-But I'm not the only one
-I hope someday you'll join us
-And the world will be as one`
+Above us, only sky`
             }
         ];
 
@@ -282,12 +256,10 @@ And the world will be as one`
         let currentSongId = localStorage.getItem('ipad_lyrics_current') || (songs.length > 0 ? songs[0].id : null);
         let fontSize = parseInt(localStorage.getItem('ipad_lyrics_fontsize')) || 36;
         
-        // Auto-scroll ticker state
         let isAutoScrolling = false;
         let scrollSpeed = 1.0;
         let scrollInterval = null;
 
-        // DOM Element references
         const drawer = document.getElementById('sidebar-drawer');
         const drawerOverlay = document.getElementById('drawer-overlay');
         const menuToggle = document.getElementById('menu-toggle');
@@ -313,7 +285,6 @@ And the world will be as one`
             menuToggle.addEventListener('click', openDrawer);
             drawerOverlay.addEventListener('click', closeDrawer);
 
-            // Keyboard navigation support for desktop/iPad keyboards
             document.addEventListener('keydown', (e) => {
                 if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
                 if (e.key === 'ArrowDown' || e.key === ' ') {
@@ -327,7 +298,6 @@ And the world will be as one`
                 }
             });
 
-            // Pause auto-scroll immediately if user interacts or touches the screen
             scrollArea.addEventListener('touchstart', () => { if (isAutoScrolling) toggleAutoScroll(); });
             scrollArea.addEventListener('wheel', () => { if (isAutoScrolling) toggleAutoScroll(); });
         };
@@ -498,7 +468,6 @@ And the world will be as one`
             }
         }
 
-        // Auto-Scroll Ticker Logic
         function toggleAutoScroll() {
             isAutoScrolling = !isAutoScrolling;
             const icon = document.getElementById('autoscroll-icon');
