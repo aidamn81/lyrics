@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>iPad Lyrics Pro</title>
     <!-- Apple Web App / Home Screen Icons -->
-    <link rel="apple-touch-icon" href="https://usercontent.googleusercontent.com/u/0/drive-storage/AOGk8nF4V2XQ5cW6_vGZ5j8l3M2N1K8L4p7Q9s3T5v2X1z8K4p7Q9s3T5v2X1z=s512">
+    <link rel="apple-touch-icon" href="icon.jpg">
     <!-- Tailwind CSS for modern layout utilities -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -61,10 +61,10 @@
 
     <div id="app-container" class="ipad-frame w-full h-full md:max-w-[1024px] md:max-h-[768px] md:rounded-[40px] bg-pureBlack border border-borderCol flex flex-col relative overflow-hidden shadow-2xl">
         
-        <!-- Top Navigation Bar -->
+        <!-- Top Navigation Bar (Always Stays Fixed) -->
         <header class="h-16 border-b border-borderCol bg-panelDark/95 backdrop-blur-md px-6 flex items-center justify-between shrink-0 z-20">
             <div class="flex items-center space-x-4">
-                <button id="menu-toggle" class="w-10 h-10 rounded-xl bg-controlDark hover:bg-neutral-800 active:scale-95 transition flex items-center justify-center text-white text-lg shadow-sm" title="Song Library">
+                <button id="menu-toggle" class="w-10 h-10 rounded-xl bg-controlDark hover:bg-neutral-800 active:scale-95 transition flex items-center justify-center text-white text-lg shadow-sm shrink-0" title="Song Library">
                     <i class="fa-solid fa-bars-staggered"></i>
                 </button>
                 <div class="overflow-hidden">
@@ -74,7 +74,7 @@
             </div>
 
             <!-- Top Header Controls: Auto-Scroll, Font Resizer, Fullscreen -->
-            <div class="flex items-center space-x-2 md:space-x-3">
+            <div class="flex items-center space-x-2 md:space-x-3 shrink-0">
                 
                 <!-- Auto-Scroll Quick Controls -->
                 <div class="flex items-center bg-controlDark border border-borderCol rounded-xl p-1 space-x-1">
