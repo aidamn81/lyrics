@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>iPad Lyrics Pro</title>
+    <title> Lyrics </title>
     
     <!-- Apple Web App / Home Screen Icons & Meta -->
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Lyrics Pro">
+    <meta name="apple-mobile-web-app-title" content="Lyrics">
 
     <!-- Tailwind CSS for modern layout utilities -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -208,8 +208,19 @@
                         <input type="text" id="song-artist-input" placeholder="e.g. Eagles" class="w-full bg-controlDark border border-borderCol rounded-xl px-4 py-3 text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-white transition">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-neutral-400 mb-1">Lyrics</label>
-                        <textarea id="song-lyrics-input" rows="8" placeholder="Paste your song lyrics here..." class="w-full bg-controlDark border border-borderCol rounded-xl p-4 text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-white transition resize-none font-mono"></textarea>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-xs font-medium text-neutral-400">Lyrics</label>
+                            <!-- Color Highlighter Helper Toolbar -->
+                            <div class="flex items-center space-x-1.5">
+                                <span class="text-[10px] text-neutral-500 mr-1">Colorize selection:</span>
+                                <button type="button" onclick="insertColorTag('red')" class="w-5 h-5 rounded-full bg-red-500 hover:scale-110 transition border border-black" title="Red text"></button>
+                                <button type="button" onclick="insertColorTag('green')" class="w-5 h-5 rounded-full bg-green-400 hover:scale-110 transition border border-black" title="Green text"></button>
+                                <button type="button" onclick="insertColorTag('yellow')" class="w-5 h-5 rounded-full bg-yellow-400 hover:scale-110 transition border border-black" title="Yellow text"></button>
+                                <button type="button" onclick="insertColorTag('cyan')" class="w-5 h-5 rounded-full bg-cyan-400 hover:scale-110 transition border border-black" title="Cyan text"></button>
+                                <button type="button" onclick="insertColorTag('magenta')" class="w-5 h-5 rounded-full bg-fuchsia-500 hover:scale-110 transition border border-black" title="Magenta text"></button>
+                            </div>
+                        </div>
+                        <textarea id="song-lyrics-input" rows="8" placeholder="Paste your song lyrics here... Use color buttons above to wrap selected text." class="w-full bg-controlDark border border-borderCol rounded-xl p-4 text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-white transition resize-none font-mono"></textarea>
                     </div>
                 </div>
 
@@ -361,8 +372,28 @@ Above us, only sky`
 
             currentTitleEl.textContent = song.title;
             currentArtistEl.textContent = song.artist || 'Unknown Artist';
-            lyricsContentEl.innerHTML = escapeHtml(song.lyrics);
+            // Render HTML directly to allow custom colored spans in lyrics
+            lyricsContentEl.innerHTML = song.lyrics;
             scrollArea.scrollTop = 0;
+        }
+
+        function insertColorTag(colorName) {
+            const textarea = document.getElementById('song-lyrics-input');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end) || 'colored text';
+
+            let hexColor = '#ffffff';
+            if (colorName === 'red') hexColor = '#ef4444';
+            else if (colorName === 'green') hexColor = '#4ade80';
+            else if (colorName === 'yellow') hexColor = '#facc15';
+            else if (colorName === 'cyan') hexColor = '#22d3ee';
+            else if (colorName === 'magenta') hexColor = '#e879f9';
+
+            const replacement = `<span style="color: ${hexColor};">${selectedText}</span>`;
+            textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start + replacement.length, start + replacement.length);
         }
 
         function openAddModal(editId = null) {
